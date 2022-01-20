@@ -83,7 +83,7 @@ spec:
             {{- toYaml .Values.ingester.resources | nindent 12 }}
       {{- with .Values.ingester.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl (toYaml . $) | nindent 8 }}
       {{- end }}
       {{- with .Values.ingester.nodeSelector }}
       nodeSelector:

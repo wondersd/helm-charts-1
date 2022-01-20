@@ -77,7 +77,7 @@ spec:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
       {{- with .Values.gateway.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl (toYaml . $) | nindent 8 }}
       {{- end }}
       {{- with .Values.gateway.nodeSelector }}
       nodeSelector:

@@ -22,6 +22,90 @@ helm repo add grafana https://grafana.github.io/helm-charts
 
 Major version upgrades listed here indicate that there is an incompatible breaking change needing manual actions.
 
+### From 0.40.x to 0.41.0
+
+String templates are now datastructures, this includes
+
+  * `loki.config` 
+  * `ingester.affinity`
+  * `distributor.affinity`
+  * `querier.affinity`
+  * `queryFrontend.affinity`
+  * `tableManager.affinity`
+  * `gateway.affinity`
+  * `ruler.affinity`
+  * `indexGateway.affinity`
+  * `memcachdChunks.affinity`
+  * `memcachedFrontend.affinity`
+  * `memcachedIndexQueries.affinity`
+  * `memcachedIndexWrites.affinity`
+
+if `indexGateway.enabled` was set the following will need to be added to passed in loki.config
+
+```yaml
+loki:
+  config:
+    storage_config:
+      boltdb_shipper:
+        index_gateway_client:
+          server_address: dns:///{{"{{"}} include "loki.indexGatewayFullname" . {{"}}"}}:9095
+```
+
+
+Conversion examples:
+
+`loki.config` Before
+
+```console
+helm install ... --set-file=loki.config=loki.yaml
+```
+
+```yaml
+config:
+  auth_enabled: false
+  ....
+```
+
+`loki.config` After
+
+```console
+helm install ... --values=loki.yaml
+```
+
+```yaml
+loki:
+  config:
+    auth_enabled: false
+    ...
+```
+
+`ingester.affinity` Before
+
+```console
+helm install ... --set-file=ingester.affinity=ingster-affinity.yaml
+```
+
+```yaml
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+  ....
+```
+
+`ingester.affinity` After
+
+```console
+helm install ... --values=ingster-affinity.yaml
+```
+
+```yaml
+ingester:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      ...
+```
+
+
 ### From 0.34.x to 0.35.0
 This version updates the `Ingress` API Version of the Loki Gateway component to `networking.k8s.io/v1` of course given that the cluster supports it. Here it's important to notice the change in the `values.yml` with regards to the ingress configuration section and its new structure.
 ```yaml
@@ -104,48 +188,14 @@ Alternatively, in order to quickly test Loki using the filestore, the [single bi
 
 ### Example configuration using memberlist, boltdb-shipper, and S3 for storage
 
-Note that `loki.config` must be configured as string.
-That's required because it is passed through the `tpl` function in order to support templating.
-This means that a complete configuration needs to be supplied to the charts which is a good thing anyways.
-Also, this allows using a separate YAML file which can be passed in using `--set-file loki.config=/path/to/config.yaml`.
 
 ```yaml
 loki:
-  config: |
-    auth_enabled: false
-
-    server:
-      log_level: info
-      # Must be set to 3100
-      http_listen_port: 3100
-
-    distributor:
-      ring:
-        kvstore:
-          store: memberlist
-
+  config:
     ingester:
       # Disable chunk transfer which is not possible with statefulsets
       # and unnecessary for boltdb-shipper
       max_transfer_retries: 0
-      chunk_idle_period: 1h
-      chunk_target_size: 1536000
-      max_chunk_age: 1h
-      lifecycler:
-        join_after: 0s
-        ring:
-          kvstore:
-            store: memberlist
-
-    memberlist:
-      join_members:
-        - {{"{{"}} include "loki.fullname" . {{"}}"}}-memberlist
-
-    limits_config:
-      ingestion_rate_mb: 10
-      ingestion_burst_size_mb: 20
-      max_concurrent_tail_requests: 20
-      max_cache_freshness_per_query: 10m
 
     schema_config:
       configs:
@@ -162,41 +212,16 @@ loki:
         s3: s3://eu-central-1
         bucketnames: my-loki-s3-bucket
       boltdb_shipper:
-        active_index_directory: /var/loki/index
         shared_store: s3
-        cache_location: /var/loki/cache
         index_gateway_client:
           server_address: dns:///{{"{{"}} include "loki.indexGatewayFullname" . {{"}}"}}:9095
-
-    query_range:
-      # make queries more cache-able by aligning them with their step intervals
-      align_queries_with_step: true
-      max_retries: 5
-      # parallelize queries in 15min intervals
-      split_queries_by_interval: 15m
-      cache_results: true
-
-      results_cache:
-        cache:
-          enable_fifocache: true
-          fifocache:
-            max_size_items: 1024
-            validity: 24h
-
-    frontend_worker:
-      frontend_address: {{"{{"}} include "loki.queryFrontendFullname" . {{"}}"}}:9095
-
-    frontend:
-      log_queries_longer_than: 5s
-      compress_responses: true
-      tail_proxy_url: http://{{"{{"}} include "loki.querierFullname" . {{"}}"}}:3100
 ```
 
 Because the config file is templated, it is also possible to e.g. externalize S3 bucket names:
 
 ```yaml
 loki:
-  config: |
+  config:
     storage_config:
       aws:
         s3: s3://eu-central-1
@@ -214,6 +239,19 @@ and automatically proxies requests to the correct Loki components (distributor, 
 The gateway must be enabled if an Ingress is required, since the Ingress exposes the gateway only.
 If the gateway is enabled, Grafana and log shipping agents, such as Promtail, should be configured to use the gateway.
 If NetworkPolicies are enabled, they are more restrictive if the gateway is enabled.
+
+## IndexGateway 
+
+If `indexGateway.enabled` is set, add the following to boltdb-shippers storage config:
+
+```yaml
+loki:
+  config:
+    storage_config:
+      boltdb_shipper:
+        index_gateway_client:
+          server_address: dns:///{{"{{"}} include "loki.indexGatewayFullname" . {{"}}"}}:9095
+```
 
 ## Metrics
 
@@ -273,7 +311,7 @@ memcachedChunks:
       memory: 3Gi
 
 loki:
-  config: |
+  config:
     chunk_store_config:
       chunk_cache_config:
         memcached:
@@ -292,7 +330,7 @@ memcachedFrontend:
   enabled: true
 
 loki:
-  config: |
+  config:
     query_range:
       cache_results: true
       results_cache:
@@ -313,7 +351,7 @@ memcachedIndexQueries:
   enabled: true
 
 loki:
-  config: |
+  config:
     storage_config:
       index_queries_cache_config:
         memcached:
@@ -334,7 +372,7 @@ memcachedIndexWrite:
   enabled: true
 
 loki:
-  config: |
+  config:
     chunk_store_config:
       write_dedupe_cache_config:
         memcached:
@@ -357,7 +395,7 @@ compactor:
   enabled: true
 
 loki:
-  config: |
+  config:
     compactor:
       shared_store: s3
 ```

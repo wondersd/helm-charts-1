@@ -58,7 +58,7 @@ loki:
   existingSecretForConfig: ""
   # -- Config file contents for Loki
   # @default -- See values.yaml
-  config: |
+  config:
     auth_enabled: false
 
     server:
@@ -109,10 +109,6 @@ loki:
         active_index_directory: /var/loki/index
         cache_location: /var/loki/cache
         cache_ttl: 168h
-        {{- if .Values.indexGateway.enabled }}
-        index_gateway_client:
-          server_address: dns:///{{ include "loki.indexGatewayFullname" . }}:9095
-        {{- end }}
       filesystem:
         directory: /var/loki/chunks
 
@@ -254,9 +250,9 @@ ingester:
   # this must be increased. It must be long enough so ingesters can be gracefully shutdown flushing/transferring
   # all data and to successfully leave the member ring on shutdown.
   terminationGracePeriodSeconds: 300
-  # -- Affinity for ingester pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for ingester pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -328,9 +324,9 @@ distributor:
   resources: {}
   # -- Grace period to allow the distributor to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for distributor pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for distributor pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -391,9 +387,9 @@ querier:
   resources: {}
   # -- Grace period to allow the querier to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for querier pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for querier pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -465,9 +461,9 @@ queryFrontend:
   resources: {}
   # -- Grace period to allow the query-frontend to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for query-frontend pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for query-frontend pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -517,9 +513,9 @@ tableManager:
   resources: {}
   # -- Grace period to allow the table-manager to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for table-manager pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for table-manager pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -601,9 +597,9 @@ gateway:
   resources: {}
   # -- Grace period to allow the gateway to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for gateway pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for gateway pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -869,9 +865,9 @@ ruler:
   resources: {}
   # -- Grace period to allow the ruler to shutdown before it is killed
   terminationGracePeriodSeconds: 300
-  # -- Affinity for ruler pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for ruler pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -1000,9 +996,9 @@ indexGateway:
   resources: {}
   # -- Grace period to allow the index-gateway to shutdown before it is killed.
   terminationGracePeriodSeconds: 300
-  # -- Affinity for index-gateway pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for index-gateway pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -1093,9 +1089,9 @@ memcachedChunks:
   resources: {}
   # -- Grace period to allow memcached-chunks to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for memcached-chunks pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for memcached-chunks pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -1136,9 +1132,9 @@ memcachedFrontend:
   resources: {}
   # -- Grace period to allow memcached-frontend to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for memcached-frontend pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for memcached-frontend pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -1179,9 +1175,9 @@ memcachedIndexQueries:
   resources: {}
   # -- Grace period to allow memcached-index-queries to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for memcached-index-queries pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for memcached-index-queries pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:
@@ -1222,9 +1218,9 @@ memcachedIndexWrites:
   resources: {}
   # -- Grace period to allow memcached-index-writes to shutdown before it is killed
   terminationGracePeriodSeconds: 30
-  # -- Affinity for memcached-index-writes pods. Passed through `tpl` and, thus, to be configured as string
+  # -- Affinity for memcached-index-writes pods. Passed through `tpl`
   # @default -- Hard node and soft zone anti-affinity
-  affinity: |
+  affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - labelSelector:

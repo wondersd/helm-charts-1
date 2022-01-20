@@ -75,7 +75,7 @@ spec:
             {{- toYaml .Values.queryFrontend.resources | nindent 12 }}
       {{- with .Values.queryFrontend.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl (toYaml . $) | nindent 8 }}
       {{- end }}
       {{- with .Values.queryFrontend.nodeSelector }}
       nodeSelector:

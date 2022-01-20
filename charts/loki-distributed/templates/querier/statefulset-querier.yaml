@@ -84,7 +84,7 @@ spec:
             {{- toYaml .Values.querier.resources | nindent 12 }}
       {{- with .Values.querier.affinity }}
       affinity:
-        {{- tpl . $ | nindent 8 }}
+        {{- tpl (toYaml . $) | nindent 8 }}
       {{- end }}
       {{- with .Values.querier.nodeSelector }}
       nodeSelector:
